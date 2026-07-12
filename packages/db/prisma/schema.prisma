@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // DATABASE_URL: conexión pooled (ej. el host "-pooler" de Neon) para queries en runtime.
+  url       = env("DATABASE_URL")
+  // DIRECT_DATABASE_URL: conexión directa (sin pooler) requerida por `prisma migrate`.
+  // Si el proveedor no distingue ambas (ej. Postgres local), usa el mismo valor en las dos.
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+enum AdminRole {
+  ADMIN
+  EDITOR
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  PSE
+  NEQUI
+  CARD
+}
+
+enum InventoryMovementType {
+  RESTOCK
+  SALE
+  ADJUSTMENT
+  RETURN
+}
+
+enum CouponDiscountType {
+  FIXED
+  PERCENT
+}
+
+model AdminUser {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      AdminRole @default(EDITOR)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Category {
+  id       String     @id @default(cuid())
+  name     String
+  slug     String     @unique
+  icon     String?
+  order    Int        @default(0)
+  parentId String?
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToCategory")
+  products Product[]
+
+  @@index([parentId])
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  brand       String?
+  basePrice   Int // COP cents-free integer (whole pesos)
+  active      Boolean   @default(true)
+  images      String[]
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  variants    ProductVariant[]
+  orderItems  OrderItem[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([active])
+}
+
+model ProductVariant {
+  id                 String              @id @default(cuid())
+  productId          String
+  product            Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku                String              @unique
+  label              String // e.g. "Negro", "Rojo / Talla M"
+  priceOverride       Int?
+  stock              Int                 @default(0)
+  lowStockThreshold  Int                 @default(5)
+  orderItems         OrderItem[]
+  movements          InventoryMovement[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@index([productId])
+}
+
+model InventoryMovement {
+  id        String                @id @default(cuid())
+  variantId String
+  variant   ProductVariant        @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  type      InventoryMovementType
+  quantity  Int // positive for in, negative for out
+  note      String?
+  createdAt DateTime              @default(now())
+
+  @@index([variantId])
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  customerId    String?
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+  guestEmail    String?
+  guestName     String?
+  guestPhone    String?
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod?
+  shippingAddress String
+  shippingCity    String
+  subtotal      Int
+  shippingCost  Int           @default(0)
+  couponCode      String?
+  discountAmount  Int           @default(0)
+  total         Int
+  mpPaymentId     String?
+  mpStatusDetail  String?
+  items         OrderItem[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([mpPaymentId])
+}
+
+model Coupon {
+  id           String             @id @default(cuid())
+  code         String             @unique
+  discountType CouponDiscountType
+  amount       Int // FIXED: pesos COP; PERCENT: 0-100
+  active       Boolean            @default(true)
+  expiresAt    DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+model OrderItem {
+  id         String          @id @default(cuid())
+  orderId    String
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product         @relation(fields: [productId], references: [id])
+  variantId  String
+  variant    ProductVariant  @relation(fields: [variantId], references: [id])
+  quantity   Int
+  unitPrice  Int
+  createdAt  DateTime        @default(now())
+
+  @@index([orderId])
+}

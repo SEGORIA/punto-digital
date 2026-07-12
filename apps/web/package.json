@@ -1,0 +1,45 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "vercel-build": "pnpm --filter @punto-digital/db exec prisma migrate deploy && next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "@punto-digital/db": "workspace:*",
+    "next-auth": "^4.24.10",
+    "bcryptjs": "^2.4.3",
+    "zustand": "^5.0.2",
+    "zod": "^3.24.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.5",
+    "lucide-react": "^0.468.0",
+    "class-variance-authority": "^0.7.1",
+    "mercadopago": "^2.0.15",
+    "@mercadopago/sdk-react": "^0.0.20",
+    "motion": "^11.15.0",
+    "three": "^0.171.0",
+    "@react-three/fiber": "^9.6.1",
+    "@react-three/drei": "^10.7.7",
+    "@aws-sdk/client-s3": "^3.716.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/three": "^0.171.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

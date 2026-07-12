@@ -1,0 +1,5 @@
+[
+  { "code": "pru3ba50", "discount_type": "fixed_cart", "amount": "50000" },
+  { "code": "bi3nv3nido10", "discount_type": "fixed_cart", "amount": "0" },
+  { "code": "gol20", "discount_type": "percent", "amount": "95" }
+]
