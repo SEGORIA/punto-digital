@@ -3,6 +3,7 @@ import { prisma } from "@punto-digital/db";
 import { updateProduct, addVariant, deleteProduct } from "../actions";
 import { Button } from "@/components/ui/button";
 import { StockAdjuster } from "@/components/admin/stock-adjuster";
+import { VariantBarcodeField } from "@/components/admin/variant-barcode-field";
 import { ImageUploader } from "@/components/admin/image-uploader";
 import { formatCOP } from "@/lib/utils";
 
@@ -83,6 +84,7 @@ export default async function EditProductPage({
           <thead>
             <tr className="text-left text-muted">
               <th className="py-2">SKU</th>
+              <th className="py-2">Código de barras</th>
               <th className="py-2">Variante</th>
               <th className="py-2">Precio</th>
               <th className="py-2">Stock</th>
@@ -93,6 +95,13 @@ export default async function EditProductPage({
             {product.variants.map((v) => (
               <tr key={v.id} className="border-t border-border">
                 <td className="py-2 font-mono text-xs">{v.sku}</td>
+                <td className="py-2">
+                  <VariantBarcodeField
+                    variantId={v.id}
+                    productId={product.id}
+                    defaultValue={v.barcode ?? ""}
+                  />
+                </td>
                 <td className="py-2">{v.label}</td>
                 <td className="py-2">{formatCOP(v.priceOverride ?? product.basePrice)}</td>
                 <td className="py-2">
@@ -108,8 +117,9 @@ export default async function EditProductPage({
           </tbody>
         </table>
 
-        <form action={addVariantWithId} className="grid sm:grid-cols-5 gap-2 items-end pt-4 border-t border-border">
+        <form action={addVariantWithId} className="grid sm:grid-cols-6 gap-2 items-end pt-4 border-t border-border">
           <Field label="SKU" name="sku" required />
+          <Field label="Código de barras" name="barcode" />
           <Field label="Nombre variante" name="label" required />
           <Field label="Stock inicial" name="stock" type="number" defaultValue={0} />
           <Field label="Precio override" name="priceOverride" type="number" />

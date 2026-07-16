@@ -113,6 +113,7 @@ export async function addVariant(productId: string, formData: FormData) {
   const label = String(formData.get("label") || "");
   const stock = Number(formData.get("stock") || 0);
   const priceOverrideRaw = formData.get("priceOverride");
+  const barcodeRaw = String(formData.get("barcode") || "").trim();
 
   await prisma.productVariant.create({
     data: {
@@ -121,7 +122,19 @@ export async function addVariant(productId: string, formData: FormData) {
       label,
       stock,
       priceOverride: priceOverrideRaw ? Number(priceOverrideRaw) : null,
+      barcode: barcodeRaw || null,
     },
+  });
+
+  revalidatePath(`/admin/productos/${productId}`);
+}
+
+export async function updateVariantBarcode(variantId: string, productId: string, barcode: string) {
+  const trimmed = barcode.trim();
+
+  await prisma.productVariant.update({
+    where: { id: variantId },
+    data: { barcode: trimmed || null },
   });
 
   revalidatePath(`/admin/productos/${productId}`);
