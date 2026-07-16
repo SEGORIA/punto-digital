@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "pnpm --filter @punto-digital/db exec prisma migrate deploy && next build",
+    "vercel-build": "pnpm --filter @punto-digital/db exec prisma generate && pnpm --filter @punto-digital/db exec prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint"
   },
